@@ -50,11 +50,17 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- AWS SDK - Required for AmazonDynamoDB client -->
 		<dependency>
-			<groupId>software.amazon.awssdk</groupId>
-			<artifactId>dynamodb</artifactId>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-dynamodb</artifactId>
 		</dependency>
-
+		<!-- dynamodb -->
+		<dependency>
+			<groupId>io.github.boostchicken</groupId>
+			<artifactId>spring-data-dynamodb</artifactId>
+			<version>5.2.5</version>
+		</dependency>
 		<!-- Jackson for object mapping (optional) -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
