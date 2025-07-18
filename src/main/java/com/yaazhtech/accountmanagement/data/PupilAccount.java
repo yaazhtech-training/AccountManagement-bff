@@ -27,8 +27,19 @@ public class PupilAccount  {
     private String password;
     @DynamoDBAttribute(attributeName = "name")
     private String name;
+    @DynamoDBAttribute(attributeName = "email")
+    private String email;
     @DynamoDBAttribute(attributeName = "userName")
     private String userName;
+    @DynamoDBAttribute(attributeName = "phoneNo")
+    private String phoneNo;
+    @DynamoDBAttribute(attributeName = "aadharNo")
+    private String aadharNo;
+    @DynamoDBAttribute(attributeName = "panNo")
+    private String panNo;
+    @DynamoDBAttribute(attributeName = "role")
+    private String role;
+
 
 
 
@@ -106,6 +117,46 @@ public class PupilAccount  {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNo() {
+        return phoneNo;
+    }
+
+    public void setPhoneNo(String phoneNo) {
+        this.phoneNo = phoneNo;
+    }
+
+    public String getAadharNo() {
+        return aadharNo;
+    }
+
+    public void setAadharNo(String aadharNo) {
+        this.aadharNo = aadharNo;
+    }
+
+    public String getPanNo() {
+        return panNo;
+    }
+
+    public void setPanNo(String panNo) {
+        this.panNo = panNo;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }
 
