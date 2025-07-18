@@ -10,12 +10,14 @@ import com.yaazhtech.accountmanagement.util.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("account/auth")
@@ -23,6 +25,8 @@ public class AuthController {
     //api endponit =>controller
     @Autowired
     private AuthService authService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
     @CrossOrigin
@@ -30,14 +34,14 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> createSignup(@RequestBody SignUpRequest signUpRequest) throws MessagingException, IOException, BadElementException {
         PupilAccount pupilAccount = new PupilAccount();
-        pupilAccount.setName(signUpRequest.getName());
+        pupilAccount.setName(signUpRequest.getUserName());
         pupilAccount.setEmail(signUpRequest.getEmail());
-        pupilAccount.setAadharNo(signUpRequest.getAadharNo());
-        pupilAccount.setPanNo(signUpRequest.getPanNo());
-        pupilAccount.setPhoneNo(signUpRequest.getPhoneNo());
+        pupilAccount.setPhoneNo(signUpRequest.getPhone());
         pupilAccount.setCreatedAt(ZonedDateTime.now().toString());
         pupilAccount.setRole(String.valueOf(Role.USER));
         pupilAccount.setPupilEmail(signUpRequest.getEmail());
+        pupilAccount.setId(UUID.randomUUID().toString());
+        pupilAccount.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
         authService.createUser(pupilAccount);
         return ResponseEntity.ok().body(new ApiResponse("Signup created successfully", pupilAccount));
     }
