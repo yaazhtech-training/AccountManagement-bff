@@ -31,12 +31,8 @@ public class PupilAccount  {
     private String email;
     @DynamoDBAttribute(attributeName = "userName")
     private String userName;
-    @DynamoDBAttribute(attributeName = "phoneNo")
-    private String phoneNo;
-    @DynamoDBAttribute(attributeName = "aadharNo")
-    private String aadharNo;
-    @DynamoDBAttribute(attributeName = "panNo")
-    private String panNo;
+    @DynamoDBAttribute(attributeName = "phone")
+    private String phone;
     @DynamoDBAttribute(attributeName = "role")
     private String role;
 
@@ -128,28 +124,13 @@ public class PupilAccount  {
     }
 
     public String getPhoneNo() {
-        return phoneNo;
+        return phone;
     }
 
     public void setPhoneNo(String phoneNo) {
-        this.phoneNo = phoneNo;
+        this.phone = phoneNo;
     }
 
-    public String getAadharNo() {
-        return aadharNo;
-    }
-
-    public void setAadharNo(String aadharNo) {
-        this.aadharNo = aadharNo;
-    }
-
-    public String getPanNo() {
-        return panNo;
-    }
-
-    public void setPanNo(String panNo) {
-        this.panNo = panNo;
-    }
 
     public String getRole() {
         return role;
