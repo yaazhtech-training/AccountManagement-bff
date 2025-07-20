@@ -35,6 +35,8 @@ public class PupilAccount  {
     private String phone;
     @DynamoDBAttribute(attributeName = "role")
     private String role;
+    @DynamoDBAttribute(attributeName = "otpData")
+    private long otpData;
 
 
 
@@ -138,6 +140,13 @@ public class PupilAccount  {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public long getotpData() {
+        return otpData;
+    }
+    public void setOtpData(long otpData) {
+        this.otpData = otpData;
     }
 }
 
