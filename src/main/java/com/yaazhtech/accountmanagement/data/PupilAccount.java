@@ -36,7 +36,7 @@ public class PupilAccount  {
     @DynamoDBAttribute(attributeName = "role")
     private String role;
     @DynamoDBAttribute(attributeName = "otpData")
-    private long otpData;
+    private String otpData;
     @DynamoDBAttribute(attributeName = "active")
     private boolean active;
 
@@ -144,10 +144,11 @@ public class PupilAccount  {
         this.role = role;
     }
 
-    public long getotpData() {
+    public String getOtpData() {
         return otpData;
     }
-    public void setOtpData(long otpData) {
+
+    public void setOtpData(String otpData) {
         this.otpData = otpData;
     }
 
@@ -159,9 +160,7 @@ public class PupilAccount  {
         this.phone = phone;
     }
 
-    public long getOtpData() {
-        return otpData;
-    }
+
 
     public boolean isActive() {
         return active;

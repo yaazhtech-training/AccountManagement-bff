@@ -2,6 +2,7 @@ package com.yaazhtech.accountmanagement.controller;
 
 import com.yaazhtech.accountmanagement.data.PupilAccount;
 import com.yaazhtech.accountmanagement.model.request.LoginRequest;
+import com.yaazhtech.accountmanagement.model.request.OtpVerificationRequest;
 import com.yaazhtech.accountmanagement.model.request.SignUpRequest;
 import com.yaazhtech.accountmanagement.model.response.ApiResponse;
 import com.yaazhtech.accountmanagement.model.response.TokenResponse;
@@ -38,9 +39,13 @@ public class AuthController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    // ✅ SIGNUP with OTP SEND
+
+    @CrossOrigin
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/signup")
     public ResponseEntity<?> createSignup(@RequestBody @Valid SignUpRequest signUpRequest) throws MessagingException {
+        System.out.println("✅ Signup request received: " + signUpRequest.getEmail());
+
         if (accountService.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
@@ -55,15 +60,40 @@ public class AuthController {
         pupilAccount.setId(UUID.randomUUID().toString());
         pupilAccount.setCreatedAt(ZonedDateTime.now().toString());
         pupilAccount.setRole(String.valueOf(Role.USER));
-        accountService.savePupil(pupilAccount);
-        otpService.generateOTP(signUpRequest.getEmail());
         pupilAccount.setActive(false);
+
+
+
         String otp = otpService.generateOTP(signUpRequest.getEmail());
-        emailService.sendOtpEmail(signUpRequest.getEmail(), otp); // sending via email
+        pupilAccount.setOtpData(otp);
+        emailService.sendOtpEmail(signUpRequest.getEmail(), otp);
+        accountService.savePupil(pupilAccount);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ApiResponse("✅ OTP sent to email", null));
+    }
+
+    @CrossOrigin
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/validate-otp")
+    public ResponseEntity<?> validateOtp(@Valid @RequestBody OtpVerificationRequest otpVerificationRequest) {
+        boolean isValid = otpService.validateOTP(otpVerificationRequest.getEmail(), otpVerificationRequest.getOtp());
+
+        if (!isValid) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new TokenResponse("Invalid or expired OTP", null));
+        }
+
+        PupilAccount user = accountService.findByEmail(otpVerificationRequest.getEmail());
+        user.setActive(true);
+        accountService.savePupil(user);
+
+        String token = jwtTokenProvider.generateToken(user.getEmail());
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new ApiResponse("OTP sent to email", null));
+                .body(new TokenResponse("OTP validated successfully", token));
     }
 
     // ✅ LOGIN
@@ -76,26 +106,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("Invalid credentials!", null));
     }
 
-    @PostMapping("/validate-otp")
-    public ResponseEntity<?> validateOtp(@RequestParam String email, @RequestParam String otp) {
-        boolean isValid = otpService.validateOTP(email, otp);
-
-        if (!isValid) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new TokenResponse("Invalid or expired OTP", null));
-        }
-
-        PupilAccount user = accountService.findByEmail(email);
-        user.setActive(true);
-        accountService.savePupil(user);
-
-        String token = jwtTokenProvider.generateToken(user.getEmail());
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(new TokenResponse("OTP validated successfully", token));
-    }
 
 
     // ✅ RESET PASSWORD
