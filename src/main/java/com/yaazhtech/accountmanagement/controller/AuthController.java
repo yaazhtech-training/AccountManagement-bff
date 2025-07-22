@@ -1,19 +1,22 @@
 package com.yaazhtech.accountmanagement.controller;
 
 import com.yaazhtech.accountmanagement.data.PupilAccount;
-import com.yaazhtech.accountmanagement.model.request.ForgotPasswordRequest;
 import com.yaazhtech.accountmanagement.model.request.LoginRequest;
 import com.yaazhtech.accountmanagement.model.request.SignUpRequest;
 import com.yaazhtech.accountmanagement.model.response.ApiResponse;
-import com.yaazhtech.accountmanagement.service.AuthService;
+import com.yaazhtech.accountmanagement.model.response.TokenResponse;
+import com.yaazhtech.accountmanagement.security.JwtTokenProvider;
+import com.yaazhtech.accountmanagement.service.AccountService;
+import com.yaazhtech.accountmanagement.service.OtpService;
+import com.yaazhtech.accountmanagement.service.EmailService;
 import com.yaazhtech.accountmanagement.util.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.MessagingException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.MessagingException;
 import javax.validation.Valid;
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -24,14 +27,27 @@ import java.util.UUID;
 public class AuthController {
 
     @Autowired
-    private AuthService authService;
+    private AccountService accountService;
 
     @Autowired
+    private OtpService otpService;
+
+    @Autowired
+    private EmailService emailService;
+    @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     // ✅ SIGNUP with OTP SEND
     @PostMapping("/signup")
     public ResponseEntity<?> createSignup(@RequestBody @Valid SignUpRequest signUpRequest) throws MessagingException {
+        if (accountService.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new ApiResponse("User already exists with this email", null));
+        }
+
         PupilAccount pupilAccount = new PupilAccount();
         pupilAccount.setName(signUpRequest.getUserName());
         pupilAccount.setEmail(signUpRequest.getEmail());
@@ -40,43 +56,53 @@ public class AuthController {
         pupilAccount.setId(UUID.randomUUID().toString());
         pupilAccount.setCreatedAt(ZonedDateTime.now().toString());
         pupilAccount.setRole(String.valueOf(Role.USER));
-        authService.createUser(pupilAccount);
-        authService.sendOtp(signUpRequest.getEmail());
-        return ResponseEntity.ok().body(new ApiResponse("Signup successful! OTP sent to your email.", pupilAccount));
+        accountService.savePupil(pupilAccount);
+        otpService.generateOTP(signUpRequest.getEmail());
+        pupilAccount.setActive(false);
+        String otp = otpService.generateOTP(signUpRequest.getEmail());
+        emailService.sendOtpEmail(signUpRequest.getEmail(), otp); // sending via email
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ApiResponse("OTP sent to email", null));
     }
 
     // ✅ LOGIN
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        boolean isAuthenticated = authService.login(request.getEmail(), request.getPassword());
+        boolean isAuthenticated = accountService.login(request.getEmail(), request.getPassword());
         if (isAuthenticated) {
             return ResponseEntity.ok().body(new ApiResponse("Login successful!", null));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("Invalid credentials!", null));
     }
 
-    // ✅ SEND OTP (FORGOT PASSWORD FLOW)
-    @PostMapping("/send-otp")
-    public ResponseEntity<?> sendOtp(@RequestBody ForgotPasswordRequest request) throws MessagingException {
-        authService.sendOtp(request.getEmail());
-        return ResponseEntity.ok().body(new ApiResponse("OTP sent successfully!", null));
+    @PostMapping("/validate-otp")
+    public ResponseEntity<?> validateOtp(@RequestParam String email, @RequestParam String otp) {
+        boolean isValid = otpService.validateOTP(email, otp);
+
+        if (!isValid) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new TokenResponse("Invalid or expired OTP", null));
+        }
+
+        PupilAccount user = accountService.findByEmail(email);
+        user.setActive(true);
+        accountService.savePupil(user);
+
+        String token = jwtTokenProvider.generateToken(user.getEmail());
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new TokenResponse("OTP validated successfully", token));
     }
 
-    // ✅ VERIFY OTP
-    @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestParam String email, @RequestParam String otp) {
-        boolean isValid = authService.verifyOtp(email, otp);
-        if (isValid) {
-            return ResponseEntity.ok().body(new ApiResponse("OTP verified successfully!", null));
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("Invalid OTP!", null));
-        }
-    }
 
     // ✅ RESET PASSWORD
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
-        authService.resetPassword(email, passwordEncoder.encode(newPassword));
+        accountService.resetPassword(email, passwordEncoder.encode(newPassword));
         return ResponseEntity.ok().body(new ApiResponse("Password reset successfully!", null));
     }
 }

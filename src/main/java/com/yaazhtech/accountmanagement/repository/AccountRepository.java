@@ -7,11 +7,15 @@ import org.socialsignin.spring.data.dynamodb.repository.EnableScanCount;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 
 
 @Repository
 @EnableScan
 @EnableScanCount
-public interface UserRepository extends CrudRepository<PupilAccount, PupilPrimaryKey> {
+public interface AccountRepository extends CrudRepository<PupilAccount, PupilPrimaryKey> {
 
+    Optional<PupilAccount> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 }
