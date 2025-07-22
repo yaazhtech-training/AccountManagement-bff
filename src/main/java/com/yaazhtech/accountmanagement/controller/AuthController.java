@@ -34,8 +34,7 @@ public class AuthController {
 
     @Autowired
     private EmailService emailService;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
@@ -51,8 +50,8 @@ public class AuthController {
         PupilAccount pupilAccount = new PupilAccount();
         pupilAccount.setName(signUpRequest.getUserName());
         pupilAccount.setEmail(signUpRequest.getEmail());
-        pupilAccount.setPhoneNo(signUpRequest.getPhone());
-        pupilAccount.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+        pupilAccount.setPhoneNo(signUpRequest.getPhoneNumber());
+        pupilAccount.setPassword(signUpRequest.getPassword());
         pupilAccount.setId(UUID.randomUUID().toString());
         pupilAccount.setCreatedAt(ZonedDateTime.now().toString());
         pupilAccount.setRole(String.valueOf(Role.USER));
@@ -102,7 +101,7 @@ public class AuthController {
     // ✅ RESET PASSWORD
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
-        accountService.resetPassword(email, passwordEncoder.encode(newPassword));
+        accountService.resetPassword(email, (newPassword));
         return ResponseEntity.ok().body(new ApiResponse("Password reset successfully!", null));
     }
 }

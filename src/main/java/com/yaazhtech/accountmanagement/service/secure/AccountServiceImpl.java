@@ -14,8 +14,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private AccountRepository pupilUserRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+
 
     @Override
     public void savePupil(PupilAccount user) {
@@ -35,14 +34,16 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public boolean login(String email, String password) {
         Optional<PupilAccount> optionalUser = pupilUserRepository.findByEmail(email);
-        return optionalUser.isPresent() && passwordEncoder.matches(password, optionalUser.get().getPassword());
+        return optionalUser.isPresent() && password.equals(optionalUser.get().getPassword());
     }
+
+
     @Override
     public void resetPassword(String email, String newPassword) {
         Optional<PupilAccount> user = pupilUserRepository.findByEmail(email);
         if (user.isPresent()) {
             PupilAccount account = user.get();
-            account.setPassword(passwordEncoder.encode(newPassword));
+            account.setPassword((newPassword));
             pupilUserRepository.save(account);
         }
     }
