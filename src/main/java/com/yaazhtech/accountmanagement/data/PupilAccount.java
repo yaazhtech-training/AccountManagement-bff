@@ -39,6 +39,9 @@ public class PupilAccount  {
     private String otpData;
     @DynamoDBAttribute(attributeName = "active")
     private boolean active;
+    @DynamoDBAttribute(attributeName = "otp")
+    private String otp;
+
 
 
 
