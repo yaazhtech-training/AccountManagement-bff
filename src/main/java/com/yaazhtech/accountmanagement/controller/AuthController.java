@@ -96,6 +96,7 @@ public class AuthController {
                 .body(new TokenResponse("OTP validated successfully", token));
     }
 
+
     // ✅ LOGIN
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
@@ -105,6 +106,7 @@ public class AuthController {
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("Invalid credentials!", null));
     }
+
 
 
 
