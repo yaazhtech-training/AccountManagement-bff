@@ -37,6 +37,8 @@ public class AuthController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+
+
     // ✅ SIGNUP - sends OTP
     @PostMapping("/signup")
     public ResponseEntity<?> createSignup(@RequestBody @Valid SignUpRequest signUpRequest) {
