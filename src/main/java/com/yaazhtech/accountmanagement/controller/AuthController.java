@@ -51,7 +51,7 @@ public class AuthController {
         }
 
 
-        
+
         // Create new user
         PupilAccount pupilAccount = new PupilAccount();
         pupilAccount.setId(UUID.randomUUID().toString());
