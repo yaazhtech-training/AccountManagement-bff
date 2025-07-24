@@ -40,6 +40,8 @@ public class AuthController {
 
 
     // ✅ SIGNUP - sends OTP
+    @CrossOrigin
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/signup")
     public ResponseEntity<?> createSignup(@RequestBody @Valid SignUpRequest signUpRequest) {
         System.out.println("📨 Signup request received for: " + signUpRequest.getEmail());
@@ -66,12 +68,13 @@ public class AuthController {
         // Generate and send OTP
         String otp = otpService.generateOTP(signUpRequest.getEmail());
         pupilAccount.setOtpData(otp);
+        // Send OTP to email
+        emailService.sendOtpEmail(signUpRequest.getEmail(), otp);
 
         // Save the user before sending OTP
         accountService.savePupil(pupilAccount);
 
-        // Send OTP to email
-        emailService.sendOtpEmail(signUpRequest.getEmail(), otp);
+
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -80,6 +83,8 @@ public class AuthController {
 
 
     // ✅ OTP Verification
+    @CrossOrigin
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/validate-otp")
     public ResponseEntity<?> validateOtp(@Valid @RequestBody OtpVerificationRequest otpRequest) {
         System.out.println("🔐 Verifying OTP for: " + otpRequest.getEmail());
@@ -112,6 +117,8 @@ public class AuthController {
     }
 
     // ✅ Login
+    @CrossOrigin
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request) {
         boolean isAuthenticated = accountService.login(request.getEmail(), request.getPassword());
@@ -136,6 +143,8 @@ public class AuthController {
     }
 
     // ✅ Password Reset
+    @CrossOrigin
+    @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
         accountService.resetPassword(email, newPassword);

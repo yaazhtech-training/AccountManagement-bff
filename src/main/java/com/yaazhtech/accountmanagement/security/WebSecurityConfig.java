@@ -25,7 +25,7 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 // ✅ Public/Unauthenticated endpoints
-                .antMatchers(HttpMethod.POST, "/signup").permitAll()
+                .antMatchers(HttpMethod.POST, "account/auth/signup").permitAll()
                 .antMatchers(
                         "/account/auth/**",
                         "/api/tnea/**",
